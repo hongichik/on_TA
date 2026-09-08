@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm - Câu 201-246</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 id="quiz-title">Luyện tập trắc nghiệm</h1>
+    <a class="back" href="index.html">&larr; Trang chủ</a>
+  </header>
+
+  <div class="card" id="quiz-card">
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+    <div class="progress-info" id="progress-info"></div>
+    <p class="q-text" id="q-text"></p>
+    <div class="options" id="options"></div>
+    <div class="explain" id="explain"></div>
+    <div class="nav-row">
+      <button class="btn-secondary" id="prev-btn">&larr; Câu trước</button>
+      <button class="btn-secondary" id="next-btn">Câu sau &rarr;</button>
+    </div>
+  </div>
+
+  <div class="card" id="nav-card">
+    <div class="grid" id="nav-grid"></div>
+    <div class="nav-row" style="margin-top:16px;">
+      <span></span>
+      <button class="btn-primary" id="finish-btn">Nộp bài / Xem kết quả</button>
+    </div>
+  </div>
+
+  <div class="card summary hidden" id="summary-card">
+    <h2>Kết quả</h2>
+    <div id="score-text"></div>
+    <div class="summary-actions">
+      <button class="btn-secondary" id="review-btn">Xem lại bài làm</button>
+      <button class="btn-primary" id="restart-btn">Làm lại từ đầu</button>
+    </div>
+  </div>
+</div>
+
+<script>window.QUIZ_STORAGE_ID = 'part3';</script>
+<script src="data3.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
