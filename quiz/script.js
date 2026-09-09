@@ -1,10 +1,30 @@
 (function () {
-  const STORAGE_KEY = 'trac_nghiem_' + (window.QUIZ_STORAGE_ID || 'default');
-  const data = window.QUIZ_DATA || [];
-  const total = data.length;
+  const rawData = window.QUIZ_DATA || [];
 
-  let answers = loadProgress(); // { [index]: chosenOptionText }
-  let current = firstUnanswered();
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Shuffle question order + shuffle each question's options.
+  // Reshuffled every time the page loads, so order can't be memorized.
+  function freshData() {
+    return shuffle(rawData).map((item) => ({
+      q: item.q,
+      answer: item.answer,
+      desc: item.desc,
+      options: shuffle(item.options),
+    }));
+  }
+
+  let data = freshData();
+  const total = data.length;
+  let answers = {}; // in-memory only for this session
+  let current = 0;
 
   const el = {
     title: document.getElementById('quiz-title'),
@@ -25,28 +45,6 @@
   };
 
   el.title.textContent = window.QUIZ_TITLE || 'Luyện tập trắc nghiệm';
-
-  function loadProgress() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) {
-      return {};
-    }
-  }
-
-  function saveProgress() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
-    } catch (e) {}
-  }
-
-  function firstUnanswered() {
-    for (let i = 0; i < total; i++) {
-      if (answers[i] === undefined) return i;
-    }
-    return 0;
-  }
 
   function buildGrid() {
     el.grid.innerHTML = '';
@@ -120,7 +118,6 @@
 
   function selectAnswer(opt) {
     answers[current] = opt;
-    saveProgress();
     render();
   }
 
@@ -137,18 +134,21 @@
       <p>Bạn đã trả lời ${answeredCount}/${total} câu. Đúng ${correctCount} câu (${total ? Math.round(correctCount / total * 100) : 0}%).</p>`;
   }
 
-  el.prevBtn.addEventListener('click', () => { if (current > 0) { current--; render(); } });
-  el.nextBtn.addEventListener('click', () => { if (current < total - 1) { current++; render(); } });
-  el.finishBtn.addEventListener('click', showSummary);
-  el.restartBtn.addEventListener('click', () => {
+  function restart() {
+    data = freshData(); // reshuffle questions & options
     answers = {};
-    saveProgress();
     current = 0;
     el.quizCard.classList.remove('hidden');
     document.getElementById('nav-card').classList.remove('hidden');
     el.summaryCard.classList.add('hidden');
+    buildGrid();
     render();
-  });
+  }
+
+  el.prevBtn.addEventListener('click', () => { if (current > 0) { current--; render(); } });
+  el.nextBtn.addEventListener('click', () => { if (current < total - 1) { current++; render(); } });
+  el.finishBtn.addEventListener('click', showSummary);
+  el.restartBtn.addEventListener('click', restart);
   el.reviewBtn.addEventListener('click', () => {
     current = 0;
     el.quizCard.classList.remove('hidden');

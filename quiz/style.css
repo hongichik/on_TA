@@ -185,3 +185,88 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   .q-text { font-size: 16px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); }
 }
+
+/* index page part list */
+.part-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.part-list a {
+  display: block;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .15s, border-color .15s;
+}
+.part-list a:hover { border-color: var(--primary); background: #f0f4ff; }
+.part-list a small { display: block; font-weight: 400; color: var(--muted); margin-top: 2px; }
+
+.study-btn {
+  display: block;
+  text-decoration: none;
+  background: var(--primary);
+  color: #fff !important;
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+.study-btn:hover { background: var(--primary-dark); }
+.study-btn small { display: block; font-weight: 400; opacity: .85; margin-top: 4px; font-size: 13px; }
+
+/* study (all questions) page */
+.study-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.study-q {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.study-options {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.study-options li {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.study-options li.correct-ans {
+  background: var(--correct-bg);
+  border-color: var(--correct);
+  color: var(--correct);
+  font-weight: 600;
+}
+.study-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+body.answers-hidden .study-options li.correct-ans {
+  background: none;
+  border-color: var(--border);
+  color: var(--text);
+  font-weight: 400;
+}
+body.answers-hidden .study-desc {
+  display: none;
+}

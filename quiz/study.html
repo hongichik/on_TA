@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Học thuộc toàn bộ câu hỏi</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Học thuộc — <span id="study-count"></span></h1>
+    <a class="back" href="index.html">&larr; Trang chủ</a>
+  </header>
+
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+    <p style="margin:0;color:var(--muted);font-size:14px;">Đáp án đúng được tô xanh. Bấm nút để ẩn đáp án và tự kiểm tra trước khi xem lại.</p>
+    <button class="btn-primary" id="toggle-answers">Ẩn đáp án (tự kiểm tra)</button>
+  </div>
+
+  <div id="study-list"></div>
+</div>
+
+<script src="data/all.js"></script>
+<script src="study.js"></script>
+</body>
+</html>
