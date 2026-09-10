@@ -1,9 +1,35 @@
-(function () {
-  const data = window.QUIZ_DATA || [];
+(async function () {
   const list = document.getElementById('study-list');
   const toggleBtn = document.getElementById('toggle-answers');
+  const toolbar = document.getElementById('toolbar');
   const countEl = document.getElementById('study-count');
+  const notConfigured = document.getElementById('not-configured');
 
+  if (!window.SheetClient || !window.SheetClient.isConfigured()) {
+    notConfigured.classList.remove('hidden');
+    countEl.textContent = '';
+    return;
+  }
+
+  countEl.textContent = 'đang tải...';
+  let data = [];
+  try {
+    data = (await window.SheetClient.fetchQuestions()) || [];
+  } catch (e) {
+    notConfigured.textContent = 'Không kết nối được Google Sheet (' + e.message + '). Kiểm tra lại URL trong trang Cài đặt.';
+    notConfigured.classList.remove('hidden');
+    countEl.textContent = '';
+    return;
+  }
+
+  if (!data.length) {
+    notConfigured.textContent = 'Chưa có câu hỏi nào trong Sheet.';
+    notConfigured.classList.remove('hidden');
+    countEl.textContent = '';
+    return;
+  }
+
+  toolbar.classList.remove('hidden');
   countEl.textContent = `${data.length} câu`;
 
   const frag = document.createDocumentFragment();

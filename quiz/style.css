@@ -270,3 +270,83 @@ body.answers-hidden .study-options li.correct-ans {
 body.answers-hidden .study-desc {
   display: none;
 }
+
+/* setup card (random pages) */
+.setup-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.setup-row label { font-size: 14px; color: var(--muted); }
+.setup-row input[type="number"] {
+  width: 90px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.pool-info {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.note-box {
+  background: #fff8e6;
+  border: 1px solid #f3dfa2;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #6b5300;
+  margin: 0;
+}
+.note-box a { color: var(--primary-dark); }
+
+/* settings page */
+.settings-field { margin-bottom: 14px; }
+.settings-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.settings-field input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.settings-field small {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.status-line {
+  margin-top: 12px;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: none;
+}
+.status-line.show { display: block; }
+.status-line.ok { background: var(--correct-bg); color: var(--correct); }
+.status-line.err { background: var(--wrong-bg); color: var(--wrong); }
+.steps {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text);
+  padding-left: 20px;
+}
+.steps code {
+  background: #eef0f4;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}

@@ -3,17 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trắc nghiệm - Câu 201-220</title>
+<title>Ôn câu hay sai</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <h1 id="quiz-title">Luyện tập trắc nghiệm</h1>
+    <h1 id="quiz-title">Ôn câu hay sai</h1>
     <a class="back" href="index.html">&larr; Trang chủ</a>
   </header>
 
-  <div class="card" id="quiz-card">
+  <div class="card" id="setup-card">
+    <p class="note-box hidden" id="not-configured">
+      Trang này cần kết nối Google Sheet để biết bạn hay sai câu nào.
+      Hãy vào <a href="settings.html">trang Cài đặt</a> để kết nối trước.
+    </p>
+    <p class="pool-info" id="pool-info">Đang tải dữ liệu...</p>
+    <div class="setup-row" id="setup-row">
+      <label for="count-input">Số câu muốn ôn:</label>
+      <input type="number" id="count-input" min="1" value="20">
+      <button class="btn-primary" id="start-btn">Bắt đầu</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="quiz-card">
     <div class="progress-bar"><div id="progress-fill"></div></div>
     <div class="progress-info" id="progress-info"></div>
     <p class="q-text" id="q-text"></p>
@@ -25,7 +38,7 @@
     </div>
   </div>
 
-  <div class="card" id="nav-card">
+  <div class="card hidden" id="nav-card">
     <div class="grid" id="nav-grid"></div>
     <div class="nav-row" style="margin-top:16px;">
       <span></span>
@@ -43,7 +56,8 @@
   </div>
 </div>
 
-<script src="data/part11.js"></script>
-<script src="script.js"></script>
+<script src="sheet-client.js"></script>
+<script src="quiz-engine.js"></script>
+<script src="random-wrong.js"></script>
 </body>
 </html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cài đặt kết nối Google Sheet</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Kết nối Google Sheet</h1>
+    <a class="back" href="index.html">&larr; Trang chủ</a>
+  </header>
+
+  <div class="card">
+    <p style="margin-top:0;color:var(--muted);font-size:14px;">Dán link Web App (Apps Script) đã deploy từ Google Sheet của bạn vào đây. Sau khi kết nối, các trang luyện tập sẽ tự lấy câu hỏi từ Sheet (kể cả câu bạn mới thêm) và tự ghi lại câu trả lời sai vào Sheet.</p>
+
+    <div class="settings-field">
+      <label for="url-input">Web App URL</label>
+      <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec">
+      <small>Lấy link này ở bước Deploy &gt; New deployment &gt; Web app trong Apps Script (xem hướng dẫn bên dưới).</small>
+    </div>
+
+    <div class="setup-row">
+      <button class="btn-primary" id="save-btn">Lưu</button>
+      <button class="btn-secondary" id="test-btn">Kiểm tra kết nối</button>
+      <button class="btn-secondary" id="clear-btn">Ngắt kết nối</button>
+    </div>
+    <div class="status-line" id="status-line"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:16px;">Hướng dẫn tạo kết nối (một lần)</h2>
+    <ol class="steps">
+      <li>Mở Google Sheet bạn muốn dùng.</li>
+      <li>Vào menu <b>Extensions (Tiện ích mở rộng) &gt; Apps Script</b>.</li>
+      <li>Xoá hết code mẫu, dán toàn bộ nội dung file <code>apps-script/Code.gs</code> (đi kèm trong thư mục dự án) vào.</li>
+      <li>Bấm biểu tượng lưu (Ctrl/Cmd+S), đặt tên project tuỳ ý.</li>
+      <li>Ở thanh công cụ, chọn hàm <code>setup</code> rồi bấm <b>Run</b> — chạy đúng 1 lần để tạo 2 sheet "Questions" và "WrongStats" và nạp sẵn 246 câu hỏi. Lần đầu Google sẽ hỏi cấp quyền: chọn tài khoản &gt; Advanced &gt; Go to project (unsafe) &gt; Allow (an toàn vì đây là script của chính bạn).</li>
+      <li>Vào <b>Deploy &gt; New deployment</b>, chọn loại <b>Web app</b>. Mục "Execute as" chọn <b>Me</b>, mục "Who has access" chọn <b>Anyone</b>, rồi bấm <b>Deploy</b>.</li>
+      <li>Copy <b>Web app URL</b> vừa được cấp, dán vào ô phía trên và bấm <b>Lưu</b>, sau đó <b>Kiểm tra kết nối</b>.</li>
+    </ol>
+    <p class="note-box">Lưu ý: khi chọn "Anyone", ai có link Web App này cũng có thể đọc/ghi dữ liệu — phù hợp cho mục đích cá nhân luyện tập, nhưng đừng chia sẻ link đó công khai.</p>
+  </div>
+</div>
+
+<script src="sheet-client.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

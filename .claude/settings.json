@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL \"https://docs.google.com/spreadsheets/d/1O0UMgNy1vVoIKDKALqAWr-KbSGdHjEOSQbfa2cd8dfM/export?format=csv&gid=0\")",
+      "Bash(curl -sL -o /tmp/sheet_check.html -w \"HTTP_STATUS:%{http_code}\\\\n\" \"https://docs.google.com/spreadsheets/d/1O0UMgNy1vVoIKDKALqAWr-KbSGdHjEOSQbfa2cd8dfM/export?format=csv&gid=0\")",
+      "Read(//tmp/**)",
+      "WebFetch(domain:docs.google.com)",
+      "Bash(python3 /private/tmp/claude-501/-Users-admin-Documents-TA-tracnhiem/f9d90950-b3a9-4d5b-8a21-66954f2b96f5/scratchpad/build_all.py)",
+      "Bash(mkdir -p /Users/admin/Documents/TA/tracnhiem/apps-script *)"
+    ],
+    "additionalDirectories": [
+      "/Users/admin/Documents/TA/tracnhiem"
+    ]
+  }
+}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trắc nghiệm - Câu 221-240</title>
+<title>Trắc nghiệm theo phần</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,6 +12,10 @@
     <h1 id="quiz-title">Luyện tập trắc nghiệm</h1>
     <a class="back" href="index.html">&larr; Trang chủ</a>
   </header>
+
+  <div class="card hidden" id="empty-state">
+    <p style="margin:0;" id="empty-msg">Không tải được câu hỏi từ Google Sheet cho phần này. Vào <a href="settings.html">trang Cài đặt</a> để kiểm tra kết nối.</p>
+  </div>
 
   <div class="card" id="quiz-card">
     <div class="progress-bar"><div id="progress-fill"></div></div>
@@ -43,7 +47,34 @@
   </div>
 </div>
 
-<script src="data/part12.js"></script>
-<script src="script.js"></script>
+<script src="sheet-client.js"></script>
+<script src="quiz-engine.js"></script>
+<script>
+(async function () {
+  const CHUNK = 20;
+  const params = new URLSearchParams(location.search);
+  const n = Math.max(1, parseInt(params.get('n'), 10) || 1);
+
+  let data = [];
+  let title = `Phần ${n}`;
+
+  if (window.SheetClient.isConfigured()) {
+    try {
+      const all = (await window.SheetClient.fetchQuestions()) || [];
+      const start = (n - 1) * CHUNK;
+      data = all.slice(start, start + CHUNK);
+      if (data.length) title = `Câu ${start + 1}-${start + data.length}`;
+    } catch (e) {
+      data = [];
+    }
+  } else {
+    document.getElementById('empty-msg').textContent =
+      'Chưa kết nối Google Sheet. Vào trang Cài đặt để kết nối trước khi luyện tập.';
+  }
+
+  document.title = title + ' - Trắc nghiệm';
+  window.QuizEngine.init(data, title);
+})();
+</script>
 </body>
 </html>

@@ -10,28 +10,63 @@
 <div class="wrap">
   <header class="top">
     <h1>Luyện tập trắc nghiệm</h1>
+    <a class="back" href="settings.html">&#9881; Kết nối Sheet</a>
   </header>
 
-  <a class="study-btn" href="study.html">Học thuộc toàn bộ 246 câu<small>Xem hết câu hỏi &amp; đáp án trong 1 trang, có thể ẩn đáp án để tự kiểm tra</small></a>
+  <p class="status-line" id="conn-status" style="margin-bottom:12px;"></p>
+
+  <a class="study-btn" href="study.html">Học thuộc toàn bộ câu hỏi<small id="study-sub">Xem hết câu hỏi &amp; đáp án trong 1 trang, có thể ẩn đáp án để tự kiểm tra</small></a>
+
+  <div class="part-list" style="margin-bottom:16px;">
+    <a href="random-all.html" style="background:#eef4ff;border-color:var(--primary);"><div>&#127922; Ngẫu nhiên toàn bộ</div><small id="random-all-sub">Trộn ngẫu nhiên từ ngân hàng câu hỏi</small></a>
+    <a href="random-wrong.html" style="background:#fff4ee;border-color:#e2793a;"><div>&#9888; Ôn câu hay sai</div><small>Lấy từ thống kê trên Sheet</small></a>
+  </div>
 
   <div class="card">
     <p style="margin-top:0;color:var(--muted)">Luyện tập theo từng phần, mỗi phần 20 câu. Câu hỏi và thứ tự đáp án sẽ được xáo trộn ngẫu nhiên mỗi lần bạn vào học lại.</p>
-    <div class="part-list">
-      <a href="part1.html"><div>Phần 1</div><small>Câu 1-20 (20 câu)</small></a>
-      <a href="part2.html"><div>Phần 2</div><small>Câu 21-40 (20 câu)</small></a>
-      <a href="part3.html"><div>Phần 3</div><small>Câu 41-60 (20 câu)</small></a>
-      <a href="part4.html"><div>Phần 4</div><small>Câu 61-80 (20 câu)</small></a>
-      <a href="part5.html"><div>Phần 5</div><small>Câu 81-100 (20 câu)</small></a>
-      <a href="part6.html"><div>Phần 6</div><small>Câu 101-120 (20 câu)</small></a>
-      <a href="part7.html"><div>Phần 7</div><small>Câu 121-140 (20 câu)</small></a>
-      <a href="part8.html"><div>Phần 8</div><small>Câu 141-160 (20 câu)</small></a>
-      <a href="part9.html"><div>Phần 9</div><small>Câu 161-180 (20 câu)</small></a>
-      <a href="part10.html"><div>Phần 10</div><small>Câu 181-200 (20 câu)</small></a>
-      <a href="part11.html"><div>Phần 11</div><small>Câu 201-220 (20 câu)</small></a>
-      <a href="part12.html"><div>Phần 12</div><small>Câu 221-240 (20 câu)</small></a>
-      <a href="part13.html"><div>Phần 13</div><small>Câu 241-246 (6 câu)</small></a>
+    <div class="part-list" id="parts-container">
+      <p class="pool-info" id="parts-info">Đang tải danh sách phần...</p>
     </div>
   </div>
 </div>
+
+<script src="sheet-client.js"></script>
+<script>
+(async function () {
+  const CHUNK = 20;
+  const status = document.getElementById('conn-status');
+  const studySub = document.getElementById('study-sub');
+  const randomAllSub = document.getElementById('random-all-sub');
+  const partsContainer = document.getElementById('parts-container');
+
+  if (!window.SheetClient.isConfigured()) {
+    status.textContent = 'Chưa kết nối Google Sheet — vào "⚙ Kết nối Sheet" ở góc trên để kết nối.';
+    status.className = 'status-line show err';
+    partsContainer.innerHTML = '<p class="pool-info">Kết nối Google Sheet để xem danh sách các phần luyện tập.</p>';
+    return;
+  }
+  try {
+    const data = await window.SheetClient.fetchQuestions();
+    const n = (data || []).length;
+    status.textContent = `Đã kết nối Google Sheet — ${n} câu hỏi.`;
+    status.className = 'status-line show ok';
+    studySub.textContent = `Xem hết ${n} câu hỏi & đáp án trong 1 trang, có thể ẩn đáp án để tự kiểm tra`;
+    randomAllSub.textContent = `Trộn ngẫu nhiên từ ${n} câu`;
+
+    const numParts = Math.max(1, Math.ceil(n / CHUNK));
+    let html = '';
+    for (let i = 1; i <= numParts; i++) {
+      const start = (i - 1) * CHUNK + 1;
+      const end = Math.min(i * CHUNK, n);
+      html += `<a href="part.html?n=${i}"><div>Phần ${i}</div><small>Câu ${start}-${end} (${end - start + 1} câu)</small></a>`;
+    }
+    partsContainer.innerHTML = html;
+  } catch (e) {
+    status.textContent = 'Không kết nối được Google Sheet: ' + e.message;
+    status.className = 'status-line show err';
+    partsContainer.innerHTML = '<p class="pool-info">Không tải được danh sách phần.</p>';
+  }
+})();
+</script>
 </body>
 </html>
