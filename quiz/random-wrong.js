@@ -30,26 +30,29 @@
   }
 
   const statMap = {};
-  (stats || []).forEach(function (s) { statMap[s.id] = s; });
+  (stats || []).forEach(function (s) { statMap[String(s.id)] = s; });
 
+  // due = số lần cần trả lời đúng để "bù" hết các lần sai trước đó.
+  // Sai 1 lần -> due 1, phải làm đúng 1 lần mới hết. Sai 2 lần liên tiếp -> due 2.
+  // Câu due = 0 (đã bù xong hoặc chưa từng sai) sẽ không xuất hiện ở đây nữa.
   const ranked = (questions || [])
     .map(function (q) {
-      const s = statMap[q.id];
+      const s = statMap[String(q.id)];
+      const due = s ? Number(s.due) || 0 : 0;
       const wrongs = s ? Number(s.wrongs) || 0 : 0;
-      const attempts = s ? Number(s.attempts) || 0 : 0;
-      return { q: q, wrongs: wrongs, rate: attempts ? wrongs / attempts : 0 };
+      return { q: q, due: due, wrongs: wrongs };
     })
-    .filter(function (x) { return x.wrongs > 0; })
-    .sort(function (a, b) { return b.wrongs - a.wrongs || b.rate - a.rate; });
+    .filter(function (x) { return x.due > 0; })
+    .sort(function (a, b) { return b.due - a.due || b.wrongs - a.wrongs; });
 
   if (!ranked.length) {
-    poolInfo.textContent = 'Chưa có câu nào được ghi nhận là sai. Hãy luyện tập ở các phần khác trước — hệ thống sẽ tự lưu câu bạn hay sai vào Google Sheet để ôn lại ở đây.';
+    poolInfo.textContent = 'Không còn câu nào cần ôn lại — mọi câu sai trước đó đã được trả lời đúng đủ số lần bù. Hãy luyện tập ở các phần khác, hệ thống sẽ tự lưu câu bạn làm sai vào đây.';
     setupRow.classList.add('hidden');
     return;
   }
 
   const wrongPool = ranked.map(function (x) { return x.q; });
-  poolInfo.textContent = `Có ${wrongPool.length} câu bạn từng làm sai (xếp theo số lần sai nhiều nhất).`;
+  poolInfo.textContent = `Có ${wrongPool.length} câu cần ôn lại (sắp xếp theo số lần cần trả đúng để bù nhiều nhất).`;
   countInput.max = wrongPool.length;
   countInput.value = Math.min(20, wrongPool.length);
 

@@ -24,7 +24,7 @@ function setup() {
   let sSheet = ss.getSheetByName(STATS_SHEET);
   if (!sSheet) sSheet = ss.insertSheet(STATS_SHEET);
   sSheet.clear();
-  sSheet.appendRow(['ID', 'Attempts', 'Wrongs', 'LastWrongAt']);
+  sSheet.appendRow(['ID', 'Attempts', 'Wrongs', 'Due', 'LastWrongAt']);
   sSheet.setFrozenRows(1);
 
   SpreadsheetApp.getUi().alert(
@@ -76,38 +76,98 @@ function getQuestions_() {
   return out;
 }
 
+// Trả về sheet WrongStats, tự thêm cột "Due" nếu là sheet cũ chưa có
+// (Due = số lần cần trả lời đúng để "trả hết nợ" các lần sai trước đó).
+function getStatsSheetReady_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(STATS_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(STATS_SHEET);
+    sheet.appendRow(['ID', 'Attempts', 'Wrongs', 'Due', 'LastWrongAt']);
+    sheet.setFrozenRows(1);
+    return sheet;
+  }
+  const lastCol = Math.max(sheet.getLastColumn(), 1);
+  const header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  if (header.indexOf('Due') === -1) {
+    const wrongsIdx = header.indexOf('Wrongs'); // 0-based
+    const insertAt = wrongsIdx + 2; // chèn ngay sau cột Wrongs (1-based)
+    sheet.insertColumnBefore(insertAt);
+    sheet.getRange(1, insertAt).setValue('Due');
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      // Khởi tạo Due bằng đúng số Wrongs hiện có (coi như chưa trả lời đúng lần nào để bù).
+      const wrongsValues = sheet.getRange(2, wrongsIdx + 1, lastRow - 1, 1).getValues();
+      sheet.getRange(2, insertAt, lastRow - 1, 1).setValues(wrongsValues);
+    }
+  }
+  return sheet;
+}
+
+function statsHeaderMap_(sheet) {
+  const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const map = {};
+  header.forEach(function (h, i) { map[h] = i + 1; }); // lưu dạng cột 1-based
+  return map;
+}
+
 function getWrongStats_() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STATS_SHEET);
-  if (!sheet) return [];
-  const values = sheet.getDataRange().getDisplayValues();
-  const rows = values.slice(1);
+  const sheet = getStatsSheetReady_();
+  const map = statsHeaderMap_(sheet);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  const values = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getDisplayValues();
   const out = [];
-  rows.forEach(function (row) {
-    const id = row[0], attempts = row[1], wrongs = row[2], lastWrongAt = row[3];
+  values.forEach(function (row) {
+    const id = row[map['ID'] - 1];
     if (!id) return;
-    out.push({ id: id, attempts: attempts || 0, wrongs: wrongs || 0, lastWrongAt: lastWrongAt ? String(lastWrongAt) : '' });
+    out.push({
+      id: id,
+      attempts: Number(row[map['Attempts'] - 1]) || 0,
+      wrongs: Number(row[map['Wrongs'] - 1]) || 0,
+      due: Number(row[map['Due'] - 1]) || 0,
+      lastWrongAt: row[map['LastWrongAt'] - 1] || ''
+    });
   });
   return out;
 }
 
+// Sai 1 lần -> Due +1 (cần trả lời đúng 1 lần để bù). Đúng 1 lần -> Due -1 (không dưới 0).
+// Câu chưa từng sai mà trả lời đúng thì bỏ qua, không tạo dòng thống kê thừa.
 function reportAnswer_(id, correct) {
   if (!id) return;
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STATS_SHEET);
-  if (!sheet) return;
-  const values = sheet.getDataRange().getValues();
+  const sheet = getStatsSheetReady_();
+  const map = statsHeaderMap_(sheet);
+  const lastRow = sheet.getLastRow();
+
   let rowIndex = -1;
-  for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === String(id)) { rowIndex = i + 1; break; }
+  if (lastRow > 1) {
+    const ids = sheet.getRange(2, map['ID'], lastRow - 1, 1).getValues();
+    for (let i = 0; i < ids.length; i++) {
+      if (String(ids[i][0]) === String(id)) { rowIndex = i + 2; break; }
+    }
   }
+
   if (rowIndex === -1) {
-    sheet.appendRow([id, 1, correct ? 0 : 1, correct ? '' : new Date()]);
-  } else {
-    const attempts = (values[rowIndex - 1][1] || 0) + 1;
-    const wrongs = (values[rowIndex - 1][2] || 0) + (correct ? 0 : 1);
-    sheet.getRange(rowIndex, 2).setValue(attempts);
-    sheet.getRange(rowIndex, 3).setValue(wrongs);
-    if (!correct) sheet.getRange(rowIndex, 4).setValue(new Date());
+    if (correct) return; // chưa từng sai + trả lời đúng -> không cần ghi
+    const newRow = [];
+    newRow[map['ID'] - 1] = id;
+    newRow[map['Attempts'] - 1] = 1;
+    newRow[map['Wrongs'] - 1] = 1;
+    newRow[map['Due'] - 1] = 1;
+    newRow[map['LastWrongAt'] - 1] = new Date();
+    sheet.appendRow(newRow);
+    return;
   }
+
+  const rowVals = sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const attempts = (Number(rowVals[map['Attempts'] - 1]) || 0) + 1;
+  const wrongs = (Number(rowVals[map['Wrongs'] - 1]) || 0) + (correct ? 0 : 1);
+  const due = Math.max(0, (Number(rowVals[map['Due'] - 1]) || 0) + (correct ? -1 : 1));
+  sheet.getRange(rowIndex, map['Attempts']).setValue(attempts);
+  sheet.getRange(rowIndex, map['Wrongs']).setValue(wrongs);
+  sheet.getRange(rowIndex, map['Due']).setValue(due);
+  if (!correct) sheet.getRange(rowIndex, map['LastWrongAt']).setValue(new Date());
 }
 
 function jsonOutput_(obj) {
