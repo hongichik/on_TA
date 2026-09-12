@@ -1,7 +1,7 @@
 // Giao tiếp với Google Apps Script Web App (đọc câu hỏi / thống kê, ghi câu trả lời sai).
-// BANK = 'trac' -> ngân hàng trắc nghiệm nghe (sheet "Questions"/"WrongStats").
+// BANK = 'reading' -> ngân hàng Reading Plus (sheet "ReadingBank"/"ReadingStats").
 window.SheetClient = (function () {
-  const BANK = 'trac';
+  const BANK = 'reading';
   const KEY = 'tracnhiem_sheet_webapp_url';
   const CACHE_KEY = 'tracnhiem_questions_cache_' + BANK;
   const WRONG_CACHE_KEY = 'tracnhiem_wrongstats_cache_' + BANK;

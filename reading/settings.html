@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cài đặt kết nối Google Sheet</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Kết nối Google Sheet</h1>
+    <a class="back" href="index.html">&larr; Trang chủ</a>
+  </header>
+
+  <div class="card">
+    <p style="margin-top:0;color:var(--muted);font-size:14px;">Link Web App (Apps Script) đã được cài sẵn trong code nên bạn không cần cấu hình gì thêm. Đây là ngân hàng "Reading Plus" — dùng chung 1 Apps Script với app Trắc nghiệm nghe, chỉ khác sheet lưu dữ liệu (ReadingBank / ReadingStats).</p>
+
+    <div class="settings-field">
+      <label for="url-input">Web App URL</label>
+      <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec">
+      <small>Lấy link này ở bước Deploy &gt; New deployment &gt; Web app trong Apps Script (xem hướng dẫn bên dưới).</small>
+    </div>
+
+    <div class="setup-row">
+      <button class="btn-primary" id="save-btn">Lưu</button>
+      <button class="btn-secondary" id="test-btn">Kiểm tra kết nối</button>
+      <button class="btn-secondary" id="clear-btn">Khôi phục mặc định</button>
+    </div>
+    <div class="status-line" id="status-line"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:16px;">Khởi tạo dữ liệu Reading Plus (một lần)</h2>
+    <ol class="steps">
+      <li>Mở Google Sheet đang dùng cho app Trắc nghiệm nghe (cùng 1 Sheet).</li>
+      <li>Vào <b>Extensions &gt; Apps Script</b>, đảm bảo đã dán bản <code>apps-script/Code.gs</code> mới nhất (có thêm phần Reading Plus).</li>
+      <li>Ở thanh công cụ, chọn hàm <code>setupReading</code> (khác với <code>setup</code> dùng cho trắc nghiệm nghe) rồi bấm <b>Run</b> — chạy đúng 1 lần để tạo sheet "ReadingBank" (138 câu) và "ReadingStats".</li>
+      <li>Nếu đã Deploy Web app từ trước thì không cần deploy lại — cùng 1 URL phục vụ cả 2 ngân hàng câu hỏi.</li>
+    </ol>
+    <p class="note-box">Nếu chưa từng deploy Web app, làm theo hướng dẫn đầy đủ ở trang Cài đặt của app Trắc nghiệm nghe (mục "Hướng dẫn tạo kết nối"), rồi dùng chung URL đó ở đây.</p>
+  </div>
+</div>
+
+<script src="sheet-client.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

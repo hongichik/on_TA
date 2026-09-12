@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading Plus theo phần</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 id="quiz-title">Reading Plus</h1>
+    <a class="back" href="index.html">&larr; Trang chủ</a>
+  </header>
+
+  <div class="card hidden" id="empty-state">
+    <p style="margin:0;" id="empty-msg">Không tải được câu hỏi từ Google Sheet cho phần này. Vào <a href="settings.html">trang Cài đặt</a> để kiểm tra kết nối.</p>
+  </div>
+
+  <div class="card" id="quiz-card">
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+    <div class="progress-info" id="progress-info"></div>
+    <p class="q-text" id="q-text"></p>
+    <div class="options" id="options"></div>
+    <p class="letter-body hidden" id="letter-body"></p>
+    <div class="group-body hidden" id="group-body"></div>
+    <div class="explain" id="explain"></div>
+    <div class="nav-row">
+      <button class="btn-secondary" id="prev-btn">&larr; Câu trước</button>
+      <button class="btn-secondary" id="next-btn">Câu sau &rarr;</button>
+    </div>
+  </div>
+
+  <div class="card" id="nav-card">
+    <div class="grid" id="nav-grid"></div>
+    <div class="nav-row" style="margin-top:16px;">
+      <span></span>
+      <button class="btn-primary" id="finish-btn">Nộp bài / Xem kết quả</button>
+    </div>
+  </div>
+
+  <div class="card summary hidden" id="summary-card">
+    <h2>Kết quả</h2>
+    <div id="score-text"></div>
+    <div class="summary-actions">
+      <button class="btn-secondary" id="review-btn">Xem lại bài làm</button>
+      <button class="btn-primary" id="restart-btn">Làm lại (xáo trộn lại)</button>
+    </div>
+  </div>
+</div>
+
+<script src="sheet-client.js"></script>
+<script src="quiz-engine.js"></script>
+<script src="cloze-engine.js"></script>
+<script src="group-engine.js"></script>
+<script>
+(async function () {
+  const PART_TITLES = {
+    1: 'Part 1 — Điền từ còn thiếu',
+    2: 'Part 2 — Sắp xếp câu',
+    3: 'Part 3 — Ai đã nói gì',
+    4: 'Part 4 — Tìm tiêu đề thừa',
+  };
+  const params = new URLSearchParams(location.search);
+  const n = Math.max(1, parseInt(params.get('n'), 10) || 1);
+  const title = PART_TITLES[n] || `Part ${n}`;
+
+  let rows = [];
+  if (window.SheetClient.isConfigured()) {
+    try {
+      const all = (await window.SheetClient.fetchQuestions()) || [];
+      rows = all.filter(function (q) { return Number(q.part) === n; });
+    } catch (e) {
+      rows = [];
+    }
+  } else {
+    document.getElementById('empty-msg').textContent =
+      'Chưa kết nối Google Sheet. Vào trang Cài đặt để kết nối trước khi luyện tập.';
+  }
+
+  document.title = title + ' - Reading Plus';
+
+  function groupBy(list, keyFn) {
+    const map = {};
+    list.forEach(function (r) { (map[keyFn(r)] = map[keyFn(r)] || []).push(r); });
+    return map;
+  }
+  function sortById(items) {
+    return items.slice().sort(function (a, b) {
+      return Number(String(a.id).split('-').pop()) - Number(String(b.id).split('-').pop());
+    });
+  }
+  function stripGroupPrefix(text) {
+    return String(text || '').replace(/^\[[^\]]*\]\s*/, '');
+  }
+
+  if (n === 1) {
+    // Part 1: nguyên cả lá thư, mỗi chỗ trống 1 dropdown (xem cloze-engine.js).
+    document.getElementById('q-text').classList.add('hidden');
+    document.getElementById('options').classList.add('hidden');
+    document.getElementById('letter-body').classList.remove('hidden');
+
+    const byGroup = groupBy(rows, function (r) { return r.group; });
+    const letters = Object.keys(byGroup).map(function (g) {
+      const items = sortById(byGroup[g]);
+      return {
+        group: g,
+        text: items[0].q,
+        blanks: items.map(function (it) { return { id: it.id, answer: it.answer, options: it.options }; }),
+      };
+    });
+    window.ClozeEngine.init(letters, title);
+  } else if (n === 2) {
+    // Part 2: hiện 5 câu xáo trộn, mỗi câu 1 dropdown chọn VỊ TRÍ đúng (1-5) — giống bố cục gốc.
+    document.getElementById('q-text').classList.add('hidden');
+    document.getElementById('options').classList.add('hidden');
+    document.getElementById('group-body').classList.remove('hidden');
+
+    const byGroup = groupBy(rows, function (r) { return r.group; });
+    const groups = Object.keys(byGroup).map(function (g) {
+      const items5 = sortById(byGroup[g]);
+      const candidates = items5[0].options;
+      const idFor = {}, posFor = {};
+      items5.forEach(function (r, idx) { idFor[r.answer] = r.id; posFor[r.answer] = String(idx + 1); });
+      const m = (items5[0].desc || '').match(/cả đoạn:\s*([^\u2192]+)\u2192/);
+      const sentence0 = m ? m[1].trim() : '';
+      return {
+        title: g,
+        intro: sentence0 ? `Câu mở đầu (đã cho sẵn, không cần chọn): "${sentence0}"` : '',
+        items: candidates.map(function (s) {
+          return { id: idFor[s] || (g + '-' + s), label: s, options: ['1', '2', '3', '4', '5'], answer: posFor[s] };
+        }),
+      };
+    });
+    window.GroupEngine.init(groups, title);
+  } else if (n === 3) {
+    // Part 3: hiện đủ 4 đoạn của 4 người, rồi 7 câu hỏi cùng nhóm, mỗi câu 1 dropdown chọn tên.
+    document.getElementById('q-text').classList.add('hidden');
+    document.getElementById('options').classList.add('hidden');
+    document.getElementById('group-body').classList.remove('hidden');
+
+    const byGroup = groupBy(rows, function (r) { return r.group; });
+    const groups = Object.keys(byGroup).map(function (g) {
+      const items = sortById(byGroup[g]);
+      const seen = {};
+      const introParts = [];
+      items.forEach(function (r) {
+        if (r.desc && !seen[r.desc]) { seen[r.desc] = true; introParts.push(r.desc); }
+      });
+      return {
+        title: g,
+        intro: introParts.join('\n\n'),
+        items: items.map(function (r) {
+          return { id: r.id, label: stripGroupPrefix(r.q), options: r.options, answer: r.answer };
+        }),
+      };
+    });
+    window.GroupEngine.init(groups, title);
+  } else if (n === 4) {
+    // Part 4: đọc đủ 7 đoạn văn (kèm tiêu đề) của 1 chủ đề, chọn tiêu đề THỪA trong 4 tiêu đề — 1 câu hỏi / chủ đề.
+    window.QuizEngine.init(rows, title);
+  } else {
+    window.QuizEngine.init(rows, title);
+  }
+})();
+</script>
+</body>
+</html>

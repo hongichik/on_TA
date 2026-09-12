@@ -1,0 +1,56 @@
+<!doctype html>
+<html><head><link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="wrap">
+<div class="card" id="quiz-card">
+  <div class="progress-bar"><div id="progress-fill"></div></div>
+  <div class="progress-info" id="progress-info"></div>
+  <p class="q-text hidden" id="q-text"></p>
+  <div class="options hidden" id="options"></div>
+  <p class="letter-body" id="letter-body"></p>
+  <div class="explain" id="explain"></div>
+  <div class="nav-row">
+    <button id="prev-btn">prev</button>
+    <button id="next-btn">next</button>
+  </div>
+</div>
+<div class="card" id="nav-card">
+  <div class="grid" id="nav-grid"></div>
+  <button id="finish-btn">finish</button>
+</div>
+<div class="card summary hidden" id="summary-card">
+  <div id="score-text"></div>
+  <button id="review-btn">review</button>
+  <button id="restart-btn">restart</button>
+</div>
+</div>
+<h1 id="quiz-title"></h1>
+<div id="empty-state" class="hidden"></div>
+<div id="out"></div>
+<script src="sheet-client.js"></script>
+<script src="cloze-engine.js"></script>
+<script>
+window.SheetClient.setUrl('http://127.0.0.1:9/fake');
+const letters = [
+  { group: 'Lá thư 1', text: 'Hi Mum,\nThe house is very beautiful and I _____ it.\nI am working at a _____ in town.',
+    blanks: [
+      { id: 'R1-01-1', answer: 'love', options: ['love','dinner','station','class'] },
+      { id: 'R1-01-2', answer: 'shop', options: ['shop','country','classes','class'] },
+    ] },
+];
+window.ClozeEngine.init(letters, 'Test Part 1');
+
+setTimeout(function () {
+  const selects = document.querySelectorAll('#letter-body select');
+  document.getElementById('out').textContent = 'NUM_SELECTS=' + selects.length +
+    ' OPTIONS_0=' + Array.from(selects[0].options).map(o=>o.value).join(',');
+  // simulate choosing correct answer for blank 1
+  selects[0].value = 'love';
+  selects[0].dispatchEvent(new Event('change'));
+  setTimeout(function () {
+    const s0 = document.querySelectorAll('#letter-body select')[0];
+    document.getElementById('out').textContent += ' | AFTER_CHOOSE class=' + s0.className + ' disabled=' + s0.disabled;
+  }, 50);
+}, 50);
+</script>
+</body></html>
