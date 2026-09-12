@@ -13,7 +13,10 @@
     <a class="back" href="settings.html">&#9881; Kết nối Sheet</a>
   </header>
 
-  <p class="status-line" id="conn-status" style="margin-bottom:12px;"></p>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+    <p class="status-line" id="conn-status" style="margin:0;"></p>
+    <button class="btn-secondary" id="reload-btn" style="padding:6px 12px;font-size:13px;">&#8635; Tải lại từ Sheet</button>
+  </div>
 
   <a class="study-btn" href="study.html">Học thuộc toàn bộ câu hỏi<small id="study-sub">Xem hết câu hỏi &amp; đáp án trong 1 trang, có thể ẩn đáp án để tự kiểm tra</small></a>
 
@@ -32,40 +35,50 @@
 
 <script src="sheet-client.js"></script>
 <script>
-(async function () {
+(function () {
   const CHUNK = 20;
   const status = document.getElementById('conn-status');
   const studySub = document.getElementById('study-sub');
   const randomAllSub = document.getElementById('random-all-sub');
   const partsContainer = document.getElementById('parts-container');
+  const reloadBtn = document.getElementById('reload-btn');
 
-  if (!window.SheetClient.isConfigured()) {
-    status.textContent = 'Chưa kết nối Google Sheet — vào "⚙ Kết nối Sheet" ở góc trên để kết nối.';
-    status.className = 'status-line show err';
-    partsContainer.innerHTML = '<p class="pool-info">Kết nối Google Sheet để xem danh sách các phần luyện tập.</p>';
-    return;
-  }
-  try {
-    const data = await window.SheetClient.fetchQuestions();
-    const n = (data || []).length;
-    status.textContent = `Đã kết nối Google Sheet — ${n} câu hỏi.`;
-    status.className = 'status-line show ok';
-    studySub.textContent = `Xem hết ${n} câu hỏi & đáp án trong 1 trang, có thể ẩn đáp án để tự kiểm tra`;
-    randomAllSub.textContent = `Trộn ngẫu nhiên từ ${n} câu`;
-
-    const numParts = Math.max(1, Math.ceil(n / CHUNK));
-    let html = '';
-    for (let i = 1; i <= numParts; i++) {
-      const start = (i - 1) * CHUNK + 1;
-      const end = Math.min(i * CHUNK, n);
-      html += `<a href="part.html?n=${i}"><div>Phần ${i}</div><small>Câu ${start}-${end} (${end - start + 1} câu)</small></a>`;
+  async function load(force) {
+    if (!window.SheetClient.isConfigured()) {
+      status.textContent = 'Chưa kết nối Google Sheet — vào "⚙ Kết nối Sheet" ở góc trên để kết nối.';
+      status.className = 'status-line show err';
+      partsContainer.innerHTML = '<p class="pool-info">Kết nối Google Sheet để xem danh sách các phần luyện tập.</p>';
+      return;
     }
-    partsContainer.innerHTML = html;
-  } catch (e) {
-    status.textContent = 'Không kết nối được Google Sheet: ' + e.message;
-    status.className = 'status-line show err';
-    partsContainer.innerHTML = '<p class="pool-info">Không tải được danh sách phần.</p>';
+    if (force) {
+      status.textContent = 'Đang tải lại toàn bộ câu hỏi từ Sheet...';
+      status.className = 'status-line show ok';
+    }
+    try {
+      const data = await window.SheetClient.fetchQuestions({ force: !!force });
+      const n = (data || []).length;
+      status.textContent = `Đã kết nối Google Sheet — ${n} câu hỏi${force ? ' (vừa tải lại)' : ''}.`;
+      status.className = 'status-line show ok';
+      studySub.textContent = `Xem hết ${n} câu hỏi & đáp án trong 1 trang, có thể ẩn đáp án để tự kiểm tra`;
+      randomAllSub.textContent = `Trộn ngẫu nhiên từ ${n} câu`;
+
+      const numParts = Math.max(1, Math.ceil(n / CHUNK));
+      let html = '';
+      for (let i = 1; i <= numParts; i++) {
+        const start = (i - 1) * CHUNK + 1;
+        const end = Math.min(i * CHUNK, n);
+        html += `<a href="part.html?n=${i}"><div>Phần ${i}</div><small>Câu ${start}-${end} (${end - start + 1} câu)</small></a>`;
+      }
+      partsContainer.innerHTML = html;
+    } catch (e) {
+      status.textContent = 'Không kết nối được Google Sheet: ' + e.message;
+      status.className = 'status-line show err';
+      partsContainer.innerHTML = '<p class="pool-info">Không tải được danh sách phần.</p>';
+    }
   }
+
+  reloadBtn.addEventListener('click', function () { load(true); });
+  load(false);
 })();
 </script>
 </body>

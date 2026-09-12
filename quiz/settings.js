@@ -18,16 +18,16 @@
   });
 
   clearBtn.addEventListener('click', function () {
-    input.value = '';
     window.SheetClient.setUrl('');
-    showStatus('Đã xoá kết nối, các trang sẽ dùng dữ liệu có sẵn ngoại tuyến.', true);
+    input.value = window.SheetClient.getUrl();
+    showStatus('Đã khôi phục về URL mặc định đã cài sẵn trong code.', true);
   });
 
   testBtn.addEventListener('click', async function () {
     window.SheetClient.setUrl(input.value);
     showStatus('Đang kiểm tra kết nối...', true);
     try {
-      const data = await window.SheetClient.fetchQuestions();
+      const data = await window.SheetClient.fetchQuestions({ force: true });
       if (!data) {
         showStatus('Chưa nhập URL.', false);
         return;
