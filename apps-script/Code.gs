@@ -56,7 +56,9 @@ function doPost(e) {
 function getQuestions_() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(QUESTIONS_SHEET);
   if (!sheet) return [];
-  const values = sheet.getDataRange().getValues();
+  // getDisplayValues() thay vì getValues(): lấy đúng chuỗi text hiển thị trong ô,
+  // tránh Sheets tự suy diễn số/ngày giờ (vd "9:30" bị đọc thành đối tượng Date).
+  const values = sheet.getDataRange().getDisplayValues();
   const rows = values.slice(1);
   const out = [];
   rows.forEach((row, i) => {
@@ -77,7 +79,7 @@ function getQuestions_() {
 function getWrongStats_() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STATS_SHEET);
   if (!sheet) return [];
-  const values = sheet.getDataRange().getValues();
+  const values = sheet.getDataRange().getDisplayValues();
   const rows = values.slice(1);
   const out = [];
   rows.forEach(function (row) {
