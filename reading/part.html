@@ -104,6 +104,7 @@
     const letters = Object.keys(byGroup).map(function (g) {
       const items = sortById(byGroup[g]);
       return {
+        id: 'p1:' + g,
         group: g,
         text: items[0].q,
         blanks: items.map(function (it) { return { id: it.id, answer: it.answer, options: it.options }; }),
@@ -125,6 +126,7 @@
       const m = (items5[0].desc || '').match(/cả đoạn:\s*([^\u2192]+)\u2192/);
       const sentence0 = m ? m[1].trim() : '';
       return {
+        id: 'p2:' + g,
         title: g,
         intro: sentence0 ? `Câu mở đầu (đã cho sẵn, không cần chọn): "${sentence0}"` : '',
         items: candidates.map(function (s) {
@@ -148,6 +150,7 @@
         if (r.desc && !seen[r.desc]) { seen[r.desc] = true; introParts.push(r.desc); }
       });
       return {
+        id: 'p3:' + g,
         title: g,
         intro: introParts.join('\n\n'),
         items: items.map(function (r) {

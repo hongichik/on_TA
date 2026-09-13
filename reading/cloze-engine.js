@@ -9,13 +9,24 @@ window.ClozeEngine = (function () {
     return a;
   }
 
-  // letters: [{ group, text, blanks: [{id, answer, options}] }]
-  function init(letters, title) {
+  // letters: [{ id, group, text, blanks: [{id, answer, options}] }]
+  function init(letters, title, opts) {
+    opts = opts || {};
+    const ids = Object.assign({
+      title: 'quiz-title', progressFill: 'progress-fill', progressInfo: 'progress-info',
+      letterBody: 'letter-body', prevBtn: 'prev-btn', nextBtn: 'next-btn', grid: 'nav-grid',
+      quizCard: 'quiz-card', navCard: 'nav-card', summaryCard: 'summary-card', scoreText: 'score-text',
+      restartBtn: 'restart-btn', reviewBtn: 'review-btn', emptyState: 'empty-state', finishBtn: 'finish-btn',
+    }, opts.ids || {});
+
     function freshLetters() {
-      return letters.map(function (L) {
+      // Xáo trộn cả thứ tự các lá thư mỗi lần vào học, không chỉ thứ tự chỗ trống bên trong.
+      return shuffle(letters).map(function (L) {
         return {
+          id: L.id || L.group,
           group: L.group,
           text: L.text,
+          reported: false,
           blanks: L.blanks.map(function (b) {
             return { id: b.id, answer: b.answer, options: shuffle(b.options), chosen: undefined };
           }),
@@ -28,27 +39,28 @@ window.ClozeEngine = (function () {
     let current = 0;
 
     const el = {
-      title: document.getElementById('quiz-title'),
-      progressFill: document.getElementById('progress-fill'),
-      progressInfo: document.getElementById('progress-info'),
-      letterBody: document.getElementById('letter-body'),
-      prevBtn: document.getElementById('prev-btn'),
-      nextBtn: document.getElementById('next-btn'),
-      grid: document.getElementById('nav-grid'),
-      quizCard: document.getElementById('quiz-card'),
-      summaryCard: document.getElementById('summary-card'),
-      scoreText: document.getElementById('score-text'),
-      restartBtn: document.getElementById('restart-btn'),
-      reviewBtn: document.getElementById('review-btn'),
-      emptyState: document.getElementById('empty-state'),
+      title: document.getElementById(ids.title),
+      progressFill: document.getElementById(ids.progressFill),
+      progressInfo: document.getElementById(ids.progressInfo),
+      letterBody: document.getElementById(ids.letterBody),
+      prevBtn: document.getElementById(ids.prevBtn),
+      nextBtn: document.getElementById(ids.nextBtn),
+      grid: document.getElementById(ids.grid),
+      quizCard: document.getElementById(ids.quizCard),
+      navCard: document.getElementById(ids.navCard),
+      summaryCard: document.getElementById(ids.summaryCard),
+      scoreText: document.getElementById(ids.scoreText),
+      restartBtn: document.getElementById(ids.restartBtn),
+      reviewBtn: document.getElementById(ids.reviewBtn),
+      emptyState: document.getElementById(ids.emptyState),
+      finishBtn: document.getElementById(ids.finishBtn),
     };
 
     if (el.title) el.title.textContent = title || 'Điền từ còn thiếu';
 
     if (total === 0) {
       if (el.quizCard) el.quizCard.classList.add('hidden');
-      const navCard = document.getElementById('nav-card');
-      if (navCard) navCard.classList.add('hidden');
+      if (el.navCard) el.navCard.classList.add('hidden');
       if (el.emptyState) el.emptyState.classList.remove('hidden');
       return;
     }
@@ -62,6 +74,16 @@ window.ClozeEngine = (function () {
         }
       });
       return { answered, correct, count: L.blanks.length };
+    }
+
+    // Cả lá thư chỉ tính "đúng" (giảm nợ) khi TẤT CẢ chỗ trống đều đúng; nếu có
+    // dù chỉ 1 chỗ sai thì cả lá thư vẫn tính là sai. Chỉ báo cáo 1 lần/lượt làm.
+    function maybeReportLetter(L) {
+      const s = letterStats(L);
+      if (s.answered === s.count && !L.reported) {
+        L.reported = true;
+        if (window.SheetClient) window.SheetClient.reportAnswer(L.id, s.correct === s.count);
+      }
     }
 
     function buildGrid() {
@@ -122,7 +144,7 @@ window.ClozeEngine = (function () {
           }
           select.addEventListener('change', function () {
             b.chosen = select.value;
-            if (window.SheetClient) window.SheetClient.reportAnswer(b.id, b.chosen === b.answer);
+            maybeReportLetter(L);
             render();
           });
           el.letterBody.appendChild(select);
@@ -149,7 +171,7 @@ window.ClozeEngine = (function () {
         answeredBlanks += s.answered;
       });
       el.quizCard.classList.add('hidden');
-      document.getElementById('nav-card').classList.add('hidden');
+      el.navCard.classList.add('hidden');
       el.summaryCard.classList.remove('hidden');
       el.scoreText.innerHTML = `<div class="score">${correctBlanks}<small>/${totalBlanks}</small></div>
         <p>Đã điền ${answeredBlanks}/${totalBlanks} chỗ trống. Đúng ${correctBlanks} (${totalBlanks ? Math.round(correctBlanks / totalBlanks * 100) : 0}%).</p>`;
@@ -159,7 +181,7 @@ window.ClozeEngine = (function () {
       data = freshLetters();
       current = 0;
       el.quizCard.classList.remove('hidden');
-      document.getElementById('nav-card').classList.remove('hidden');
+      el.navCard.classList.remove('hidden');
       el.summaryCard.classList.add('hidden');
       buildGrid();
       render();
@@ -167,12 +189,12 @@ window.ClozeEngine = (function () {
 
     el.prevBtn.addEventListener('click', () => { if (current > 0) { current--; render(); } });
     el.nextBtn.addEventListener('click', () => { if (current < total - 1) { current++; render(); } });
-    document.getElementById('finish-btn').addEventListener('click', showSummary);
+    el.finishBtn.addEventListener('click', showSummary);
     el.restartBtn.addEventListener('click', restart);
     el.reviewBtn.addEventListener('click', () => {
       current = 0;
       el.quizCard.classList.remove('hidden');
-      document.getElementById('nav-card').classList.remove('hidden');
+      el.navCard.classList.remove('hidden');
       el.summaryCard.classList.add('hidden');
       render();
     });

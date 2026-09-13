@@ -9,55 +9,112 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <h1 id="quiz-title">Ôn câu hay quên</h1>
+    <h1>Ôn câu hay quên</h1>
     <a class="back" href="index.html">&larr; Trang chủ</a>
   </header>
 
-  <div class="card" id="setup-card">
-    <p class="note-box hidden" id="not-configured">
-      Trang này cần kết nối Google Sheet để biết bạn hay quên câu nào.
-      Hãy vào <a href="settings.html">trang Cài đặt</a> để kết nối trước.
-    </p>
-    <p class="pool-info" id="pool-info">Đang tải dữ liệu...</p>
-    <div class="setup-row" id="setup-row">
-      <label for="count-input">Số câu muốn ôn:</label>
-      <input type="number" id="count-input" min="1" value="20">
-      <button class="btn-primary" id="start-btn">Bắt đầu</button>
-    </div>
+  <p class="pool-info" id="loading-msg">Đang tải dữ liệu...</p>
+  <div class="card hidden" id="not-configured">
+    <p style="margin:0;">Trang này cần kết nối Google Sheet để biết bạn hay quên nhóm câu nào. Hãy vào <a href="settings.html">trang Cài đặt</a> để kết nối trước.</p>
+  </div>
+  <div class="card hidden" id="empty-all">
+    <p style="margin:0;">Không còn nhóm nào cần ôn lại — mọi lần trả lời sai trước đó đã được làm đúng cả nhóm đủ số lần bù. Hãy tiếp tục luyện tập ở các phần khác, hệ thống sẽ tự lưu nhóm bạn làm sai vào đây.</p>
   </div>
 
-  <div class="card hidden" id="quiz-card">
-    <div class="progress-bar"><div id="progress-fill"></div></div>
-    <div class="progress-info" id="progress-info"></div>
-    <p class="q-text" id="q-text"></p>
-    <div class="options" id="options"></div>
-    <div class="explain" id="explain"></div>
-    <div class="nav-row">
-      <button class="btn-secondary" id="prev-btn">&larr; Câu trước</button>
-      <button class="btn-secondary" id="next-btn">Câu sau &rarr;</button>
+  <!-- Part 1: các lá thư hay quên -->
+  <section class="hidden" id="section-p1">
+    <h2 id="p1-quiz-title">Ôn Part 1</h2>
+    <div class="card" id="p1-quiz-card">
+      <div class="progress-bar"><div id="p1-progress-fill"></div></div>
+      <div class="progress-info" id="p1-progress-info"></div>
+      <p class="letter-body" id="p1-letter-body"></p>
+      <div class="nav-row">
+        <button class="btn-secondary" id="p1-prev-btn">&larr; Trước</button>
+        <button class="btn-secondary" id="p1-next-btn">Sau &rarr;</button>
+      </div>
     </div>
-  </div>
+    <div class="card" id="p1-nav-card">
+      <div class="grid" id="p1-nav-grid"></div>
+      <div class="nav-row" style="margin-top:16px;">
+        <span></span>
+        <button class="btn-primary" id="p1-finish-btn">Nộp bài / Xem kết quả</button>
+      </div>
+    </div>
+    <div class="card summary hidden" id="p1-summary-card">
+      <h2>Kết quả Part 1</h2>
+      <div id="p1-score-text"></div>
+      <div class="summary-actions">
+        <button class="btn-secondary" id="p1-review-btn">Xem lại</button>
+        <button class="btn-primary" id="p1-restart-btn">Làm lại (xáo trộn lại)</button>
+      </div>
+    </div>
+  </section>
 
-  <div class="card hidden" id="nav-card">
-    <div class="grid" id="nav-grid"></div>
-    <div class="nav-row" style="margin-top:16px;">
-      <span></span>
-      <button class="btn-primary" id="finish-btn">Nộp bài / Xem kết quả</button>
+  <!-- Part 2 & 3: các chủ đề hay quên -->
+  <section class="hidden" id="section-p23">
+    <h2 id="p23-quiz-title">Ôn Part 2 &amp; 3</h2>
+    <div class="card" id="p23-quiz-card">
+      <div class="progress-bar"><div id="p23-progress-fill"></div></div>
+      <div class="progress-info" id="p23-progress-info"></div>
+      <div class="group-body" id="p23-group-body"></div>
+      <div class="nav-row">
+        <button class="btn-secondary" id="p23-prev-btn">&larr; Trước</button>
+        <button class="btn-secondary" id="p23-next-btn">Sau &rarr;</button>
+      </div>
     </div>
-  </div>
+    <div class="card" id="p23-nav-card">
+      <div class="grid" id="p23-nav-grid"></div>
+      <div class="nav-row" style="margin-top:16px;">
+        <span></span>
+        <button class="btn-primary" id="p23-finish-btn">Nộp bài / Xem kết quả</button>
+      </div>
+    </div>
+    <div class="card summary hidden" id="p23-summary-card">
+      <h2>Kết quả Part 2 &amp; 3</h2>
+      <div id="p23-score-text"></div>
+      <div class="summary-actions">
+        <button class="btn-secondary" id="p23-review-btn">Xem lại</button>
+        <button class="btn-primary" id="p23-restart-btn">Làm lại (xáo trộn lại)</button>
+      </div>
+    </div>
+  </section>
 
-  <div class="card summary hidden" id="summary-card">
-    <h2>Kết quả</h2>
-    <div id="score-text"></div>
-    <div class="summary-actions">
-      <button class="btn-secondary" id="review-btn">Xem lại bài làm</button>
-      <button class="btn-primary" id="restart-btn">Làm lại (xáo trộn lại)</button>
+  <!-- Part 4: các chủ đề hay quên -->
+  <section class="hidden" id="section-p4">
+    <h2 id="p4-quiz-title">Ôn Part 4</h2>
+    <div class="card" id="p4-quiz-card">
+      <div class="progress-bar"><div id="p4-progress-fill"></div></div>
+      <div class="progress-info" id="p4-progress-info"></div>
+      <p class="q-text" id="p4-q-text"></p>
+      <div class="options" id="p4-options"></div>
+      <div class="explain" id="p4-explain"></div>
+      <div class="nav-row">
+        <button class="btn-secondary" id="p4-prev-btn">&larr; Trước</button>
+        <button class="btn-secondary" id="p4-next-btn">Sau &rarr;</button>
+      </div>
     </div>
-  </div>
+    <div class="card" id="p4-nav-card">
+      <div class="grid" id="p4-nav-grid"></div>
+      <div class="nav-row" style="margin-top:16px;">
+        <span></span>
+        <button class="btn-primary" id="p4-finish-btn">Nộp bài / Xem kết quả</button>
+      </div>
+    </div>
+    <div class="card summary hidden" id="p4-summary-card">
+      <h2>Kết quả Part 4</h2>
+      <div id="p4-score-text"></div>
+      <div class="summary-actions">
+        <button class="btn-secondary" id="p4-review-btn">Xem lại</button>
+        <button class="btn-primary" id="p4-restart-btn">Làm lại (xáo trộn lại)</button>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script src="sheet-client.js"></script>
 <script src="quiz-engine.js"></script>
+<script src="cloze-engine.js"></script>
+<script src="group-engine.js"></script>
 <script src="random-wrong.js"></script>
 </body>
 </html>

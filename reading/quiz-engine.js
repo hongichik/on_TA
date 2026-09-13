@@ -10,7 +10,16 @@ window.QuizEngine = (function () {
     return a;
   }
 
-  function init(rawData, title) {
+  function init(rawData, title, opts) {
+    opts = opts || {};
+    const ids = Object.assign({
+      title: 'quiz-title', progressFill: 'progress-fill', progressInfo: 'progress-info',
+      qText: 'q-text', options: 'options', explain: 'explain', prevBtn: 'prev-btn', nextBtn: 'next-btn',
+      finishBtn: 'finish-btn', grid: 'nav-grid', quizCard: 'quiz-card', navCard: 'nav-card',
+      summaryCard: 'summary-card', scoreText: 'score-text', restartBtn: 'restart-btn',
+      reviewBtn: 'review-btn', emptyState: 'empty-state',
+    }, opts.ids || {});
+
     const source = (rawData || []).filter((item) => item && item.q && item.options && item.options.length);
 
     function freshData() {
@@ -29,30 +38,30 @@ window.QuizEngine = (function () {
     let current = 0;
 
     const el = {
-      title: document.getElementById('quiz-title'),
-      progressFill: document.getElementById('progress-fill'),
-      progressInfo: document.getElementById('progress-info'),
-      qText: document.getElementById('q-text'),
-      options: document.getElementById('options'),
-      explain: document.getElementById('explain'),
-      prevBtn: document.getElementById('prev-btn'),
-      nextBtn: document.getElementById('next-btn'),
-      finishBtn: document.getElementById('finish-btn'),
-      grid: document.getElementById('nav-grid'),
-      quizCard: document.getElementById('quiz-card'),
-      summaryCard: document.getElementById('summary-card'),
-      scoreText: document.getElementById('score-text'),
-      restartBtn: document.getElementById('restart-btn'),
-      reviewBtn: document.getElementById('review-btn'),
-      emptyState: document.getElementById('empty-state'),
+      title: document.getElementById(ids.title),
+      progressFill: document.getElementById(ids.progressFill),
+      progressInfo: document.getElementById(ids.progressInfo),
+      qText: document.getElementById(ids.qText),
+      options: document.getElementById(ids.options),
+      explain: document.getElementById(ids.explain),
+      prevBtn: document.getElementById(ids.prevBtn),
+      nextBtn: document.getElementById(ids.nextBtn),
+      finishBtn: document.getElementById(ids.finishBtn),
+      grid: document.getElementById(ids.grid),
+      quizCard: document.getElementById(ids.quizCard),
+      navCard: document.getElementById(ids.navCard),
+      summaryCard: document.getElementById(ids.summaryCard),
+      scoreText: document.getElementById(ids.scoreText),
+      restartBtn: document.getElementById(ids.restartBtn),
+      reviewBtn: document.getElementById(ids.reviewBtn),
+      emptyState: document.getElementById(ids.emptyState),
     };
 
     if (el.title) el.title.textContent = title || 'Luyện tập trắc nghiệm';
 
     if (total === 0) {
       if (el.quizCard) el.quizCard.classList.add('hidden');
-      const navCard = document.getElementById('nav-card');
-      if (navCard) navCard.classList.add('hidden');
+      if (el.navCard) el.navCard.classList.add('hidden');
       if (el.emptyState) el.emptyState.classList.remove('hidden');
       return;
     }
@@ -143,7 +152,7 @@ window.QuizEngine = (function () {
         if (answers[i] === item.answer) correctCount++;
       });
       el.quizCard.classList.add('hidden');
-      document.getElementById('nav-card').classList.add('hidden');
+      el.navCard.classList.add('hidden');
       el.summaryCard.classList.remove('hidden');
       el.scoreText.innerHTML = `<div class="score">${correctCount}<small>/${total}</small></div>
         <p>Bạn đã trả lời ${answeredCount}/${total} câu. Đúng ${correctCount} câu (${total ? Math.round(correctCount / total * 100) : 0}%).</p>`;
@@ -154,7 +163,7 @@ window.QuizEngine = (function () {
       answers = {};
       current = 0;
       el.quizCard.classList.remove('hidden');
-      document.getElementById('nav-card').classList.remove('hidden');
+      el.navCard.classList.remove('hidden');
       el.summaryCard.classList.add('hidden');
       buildGrid();
       render();
@@ -167,7 +176,7 @@ window.QuizEngine = (function () {
     el.reviewBtn.addEventListener('click', () => {
       current = 0;
       el.quizCard.classList.remove('hidden');
-      document.getElementById('nav-card').classList.remove('hidden');
+      el.navCard.classList.remove('hidden');
       el.summaryCard.classList.add('hidden');
       render();
     });
